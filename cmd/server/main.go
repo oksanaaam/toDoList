@@ -17,6 +17,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("Could not connect to db: %v", err)
 	}
+	defer db.Close()
 
 	todoService := service.NewTodoService(db)
 

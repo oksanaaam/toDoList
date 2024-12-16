@@ -69,3 +69,7 @@ func (s *postgresStorage) DeleteTodo(id string) error {
 	_, err := s.conn.Exec(context.Background(), "DELETE FROM todos WHERE id = $1", id)
 	return err
 }
+
+func (s *postgresStorage) Close() {
+	s.conn.Close(context.Background())
+}
