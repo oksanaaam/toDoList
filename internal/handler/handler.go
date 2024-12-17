@@ -2,11 +2,19 @@ package handler
 
 import (
 	"net/http"
+	"time"
 	"toDoList/internal/model"
 	"toDoList/internal/service"
 
 	"github.com/gin-gonic/gin"
 )
+
+func HomePage(todoService service.TodoService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		time.Sleep(5 * time.Second)
+		c.String(http.StatusOK, "Welcome To To-Do Server")
+	}
+}
 
 func GetToDos(todoService service.TodoService) gin.HandlerFunc {
 	return func(c *gin.Context) {
