@@ -19,13 +19,23 @@ import (
 func main() {
 	cfg := config.LoadConfig()
 
-	db, err := storage.NewPostgresConnection(cfg.DBConnectionString)
+	var store storage.Storage
+	var err error
+
+	if cfg.DBType == "postgres" {
+		store, err = storage.NewPostgresConnection(cfg.DBConnectionString)
+	} else if cfg.DBType == "mongo" {
+		store, err = storage.NewMongoConnection(cfg.MongoURI, cfg.MongoDBName, cfg.MongoCollectionName)
+	} else {
+		log.Fatalf("Unsupported DB type: %v", cfg.DBType)
+	}
+
 	if err != nil {
 		log.Fatalf("Could not connect to db: %v", err)
 	}
-	defer db.Close()
+	defer store.Close()
 
-	todoService := service.NewTodoService(db)
+	todoService := service.NewTodoService(store)
 
 	router := gin.Default()
 
