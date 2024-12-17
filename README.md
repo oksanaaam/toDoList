@@ -1,12 +1,13 @@
 # ToDo List API
 
-This is a simple API for managing todo lists, implemented in Go, using PostgreSQL as a database.
+This is a simple API for managing todo lists, implemented in Go, using **PostgreSQL** and **MongoDB** as a database.
 
 ## Description
 
 The API allows you to create, get, update and delete tasks in a todo list. We use **Gin** as a framework for creating the API and **pgx** for working with PostgreSQL.
 
 ### Main functionalities:
+- **GET /** – Gin API homepage.
 - **GET /todos** – get all tasks.
 - **GET /todos/:id** – get a task by ID.
 - **POST /todos** – add a new task.
@@ -17,6 +18,7 @@ The API allows you to create, get, update and delete tasks in a todo list. We us
 - **Go** (Golang)
 - **Gin** (web framework)
 - **PostgreSQL** (database)
+- **MongoDB** (database)
 - **pgx** (library for working with PostgreSQL)
 
 ## Installation and launch
@@ -31,6 +33,7 @@ cd todolist-api
 
 ### 2. Setting up PostgreSQL
 
+**PostgreSQL**
 1. **Create the database**:
    Use pgAdmin or the command line to create a database:
    ```sql
@@ -46,17 +49,30 @@ cd todolist-api
 
 3. **Set up environment variables**:
     Create a .env file or set the following environment variables in your system:
-        - DB_CONNECTION_STRING=postgres://username:password@localhost:5432/todolist
-        - Replace username and password with your actual PostgreSQL credentials.
+        *DB_TYPE* – choice of database: mongo or postgres
+        *MONGO_URI* – URI for connecting to MongoDB (default: mongodb://localhost:27017)
+        *MONGO_DB_NAME* – MongoDB database name
+        *MONGO_COLLECTION_NAME* – the name of the collection in MongoDB
+        *SERVER_ADDRESS* – address for the API (eg localhost:8080)
+        *DB_CONNECTION_STRING* – connection string to PostgreSQL (default: postgres://username:password@localhost:5432/todolist)
+
+        Replace username and password with your actual credentials.
 
 4. **Installing dependencies**:
     Run the following command to install all required Go dependencies:
     `go mod tidy`
 
 5. **Running the project**:
-    To start the project, use the following command:
-    `go run main.go`
 
+**MongoDB**:
+   To start MongoDB via Docker, use the command:
+   `docker-compose up --build`
+   This will build and start the container with MongoDB.  
+   After using run:
+   `docker-compose down`
+   
+   To start the project local with Postgres, use the following command:
+    `go run main.go`
     This will start the server, and the API will be available at http://localhost:8080.
 
 6. **Testing the endpoints**:

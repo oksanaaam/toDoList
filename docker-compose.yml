@@ -1,0 +1,40 @@
+version: "3.8"
+
+services:
+  mongo:
+    image: mongo:latest
+    container_name: mongo
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=example
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - todo_network
+
+  app:
+    build: .
+    container_name: todo-app
+    environment:
+      - DB_TYPE=${DB_TYPE}
+      - MONGO_URI=${MONGO_URI}
+      - MONGO_DB_NAME=${MONGO_DB_NAME}
+      - MONGO_COLLECTION_NAME=${MONGO_COLLECTION_NAME}
+      - SERVER_ADDRESS=${SERVER_ADDRESS}
+    ports:
+      - "8080:8080"
+    depends_on:
+      - mongo
+    networks:
+      - todo_network
+    env_file:
+      - .env
+
+volumes:
+  mongo_data:
+
+networks:
+  todo_network:
+    driver: bridge

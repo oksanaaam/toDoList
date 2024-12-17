@@ -14,6 +14,7 @@ type Storage interface {
 	AddTodo(todo model.ToDo) error
 	UpdateTodo(id string, todo model.ToDo) error
 	DeleteTodo(id string) error
+	Close()
 }
 
 type postgresStorage struct {
