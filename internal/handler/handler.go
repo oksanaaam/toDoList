@@ -1,13 +1,60 @@
 package handler
 
 import (
+	"fmt"
 	"net/http"
 	"time"
 	"toDoList/internal/model"
 	"toDoList/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/time/rate"
 )
+
+var (
+	limiter   = make(map[string]*rate.Limiter) // map limit for every user
+	rateLimit = rate.Every(1 * time.Second)    // Limit: 1 request per second
+	burst     = 5                              // max amount requsts
+)
+
+func RateLimiter() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		ip := c.ClientIP()
+
+		// cheking if exist limit for this IP
+		if _, exists := limiter[ip]; !exists {
+			limiter[ip] = rate.NewLimiter(rateLimit, burst)
+		}
+
+		l := limiter[ip]
+
+		// cheking if allow we do a request
+		if !l.Allow() {
+			c.JSON(http.StatusTooManyRequests, gin.H{
+				"error": "Too many requests. Please try again later.",
+			})
+			c.Abort()
+			return
+		}
+
+		c.Next()
+	}
+}
+
+func MaxConnections(limit int) gin.HandlerFunc {
+	sem := make(chan struct{}, limit)
+	release := func() { <-sem }
+	return func(c *gin.Context) {
+		select {
+		case sem <- struct{}{}: // acquire before request
+			defer release() // release after request
+			c.Next()
+		default:
+			c.AbortWithError(http.StatusServiceUnavailable,
+				fmt.Errorf("too many connections. limit %v", limit)) // send 503 and stop the chain
+		}
+	}
+}
 
 func HomePage(todoService service.TodoService) gin.HandlerFunc {
 	return func(c *gin.Context) {
