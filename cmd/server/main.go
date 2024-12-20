@@ -39,6 +39,9 @@ func main() {
 
 	router := gin.Default()
 
+	router.Use(handler.MaxConnections(150)) // limit for amount of users
+	router.Use(handler.RateLimiter())       // limit for amount of request per one user
+
 	router.GET("/", handler.HomePage(todoService))
 	router.GET("/todos", handler.GetToDos(todoService))
 	router.GET("/todos/:id", handler.GetToDosById(todoService))

@@ -17,8 +17,8 @@ type Config struct {
 }
 
 func LoadConfig() *Config {
-	// err := godotenv.Load() // for local running
-	err := godotenv.Load("/app/.env") // for running in docker
+	err := godotenv.Load() // for local running
+	// err := godotenv.Load("/app/.env") // for running in docker
 	if err != nil {
 		log.Fatal("Cannot find file .env, err: ", err)
 	}
