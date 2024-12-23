@@ -72,8 +72,25 @@ cd todolist-api
    `docker-compose down`
    
    To start the project local with Postgres, use the following command:
-    `go run main.go`
+    `go run cmd/server/main.go`
     This will start the server, and the API will be available at http://localhost:8080.
+
+**Load Balancer**:
+If you want to use the Load Balancer to distribute traffic between multiple API servers, make sure to follow these steps:
+
+1. Start Multiple API Servers:  
+    Run the following commands in separate terminals for each API server:  
+    Server 1 (on localhost:8080):
+        `go run cmd/server/main.go`
+
+    Server 2 (on localhost:8081):
+        `go run cmd/server/main.go`
+
+    Server 3 (on localhost:8082):
+        `go run cmd/server/main.go`
+2. Run Load Balancer:
+    The load balancer will start automatically when you run the API servers, and it will listen on port 8085.  
+    If port 8085 is already in use, the load balancer will not start, and a message will be displayed in the terminal.  
 
 6. **Testing the endpoints**:
     You can test the endpoints using tools like Postman or curl.

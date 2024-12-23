@@ -1,0 +1,29 @@
+# Ignore files and directories that are not needed in the Docker container
+# They look like they shouldn't be in the image.
+
+# Ignore binaries that are compiled
+todo-app
+
+# Ignore directories with dependencies
+/vendor/
+
+# Ignore configuration files for the IDE
+.idea/
+.vscode/
+
+# Ignore files and directories related to testing
+*.test
+*.out
+*.log
+
+# Ignore directories for working with versions
+.git/
+.gitignore
+
+# Ignore all temporary files
+*.bak
+*.swp
+
+# Ignore standard system files
+.DS_Store
+Thumbs.db
