@@ -31,9 +31,24 @@ func (lb *LoadBalancer) getNextServer() string {
 func (lb *LoadBalancer) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	server := lb.getNextServer()
 
+	// Create a channel for the server response
+	ch := make(chan string)
+
+	// Asynchronously handle the redirect in a goroutine
+	go lb.handleRequest(w, r, server, ch)
+
+	// Wait for the response
+	response := <-ch
+
+	// Respond back to the client with the result
+	http.Redirect(w, r, response, http.StatusTemporaryRedirect)
+}
+
+// handleRequest asynchronously handles the proxying of a request
+func (lb *LoadBalancer) handleRequest(w http.ResponseWriter, r *http.Request, server string, ch chan string) {
 	log.Printf("Routing request to server: %s", server)
 
 	// Redirect the request to the selected server
 	proxyURL := "http://" + server + r.URL.Path
-	http.Redirect(w, r, proxyURL, http.StatusTemporaryRedirect)
+	ch <- proxyURL // Send the redirect URL to the channel
 }
