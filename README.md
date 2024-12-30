@@ -42,9 +42,9 @@ cd todolist-api
 2. **Create the todos table: Run the following SQL query to create the table**:
     ```sql
     CREATE TABLE todos (
-        id VARCHAR PRIMARY KEY,
-        title VARCHAR(255) NOT NULL,
-        status VARCHAR(50) NOT NULL
+    id VARCHAR PRIMARY KEY,
+    title VARCHAR(255) NOT NULL,
+    status VARCHAR(50) NOT NULL CHECK (status IN ('created', 'in progress', 'done'))
     );
 
 3. **Set up environment variables**:
