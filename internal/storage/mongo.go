@@ -74,7 +74,8 @@ func (m *mongoStorage) GetTodoById(id string) (model.ToDo, error) {
 		return model.ToDo{}, err
 	}
 	var todo model.ToDo
-	err = m.collection.FindOne(context.Background(), bson.D{{"_id", objectID}}).Decode(&todo)
+	err = m.collection.FindOne(context.Background(), bson.D{{Key: "_id", Value: objectID}}).Decode(&todo)
+
 	if err != nil {
 		return model.ToDo{}, err
 	}
@@ -89,8 +90,8 @@ func (m *mongoStorage) UpdateTodo(id string, todo model.ToDo) error {
 
 	_, err = m.collection.UpdateOne(
 		context.Background(),
-		bson.D{{"_id", objectID}},
-		bson.D{{"$set", bson.D{{"title", todo.Title}, {"status", todo.Status}}}},
+		bson.D{{Key: "_id", Value: objectID}},
+		bson.D{{Key: "$set", Value: bson.D{{Key: "title", Value: todo.Title}, {Key: "status", Value: todo.Status}}}},
 	)
 	return err
 }
@@ -100,7 +101,7 @@ func (m *mongoStorage) DeleteTodo(id string) error {
 	if err != nil {
 		return err
 	}
-	_, err = m.collection.DeleteOne(context.Background(), bson.D{{"_id", objectID}})
+	_, err = m.collection.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: objectID}})
 	return err
 }
 
