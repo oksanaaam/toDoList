@@ -68,7 +68,9 @@ func main() {
 	router.GET("/", handler.HomePage(todoService))
 	router.GET("/todos", handler.GetToDos(todoService))
 	router.GET("/todos/:id", handler.GetToDosById(todoService))
+	router.GET("/todos/:id/image", handler.GetTodosImageById(todoService))
 	router.POST("/todos", handler.PostToDos(todoService))
+	router.POST("/todos/:id/image", handler.UploadToDoImage(todoService))
 	router.PUT("/todos/:id", handler.UpdateToDos(todoService))
 	router.DELETE("/todos/:id", handler.DeleteToDosById(todoService))
 
