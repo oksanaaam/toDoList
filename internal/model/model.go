@@ -1,9 +1,10 @@
 package model
 
 type ToDo struct {
-	ID     string `json:"id,omitempty" bson:"_id,omitempty"`
-	Title  string `json:"title"`
-	Status Status `json:"status"`
+	ID        string `json:"id,omitempty" bson:"_id,omitempty"`
+	Title     string `json:"title" bson:"title"`
+	Status    Status `json:"status" bson:"status"`
+	ImagePath string `json:"image_path,omitempty" bson:"image_path,omitempty"`
 }
 
 // IsValidStatus checks, if status is valid

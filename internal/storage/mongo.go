@@ -3,6 +3,7 @@ package storage
 import (
 	"context"
 	"fmt"
+	"log"
 	"toDoList/internal/model"
 
 	"go.mongodb.org/mongo-driver/bson"
@@ -69,38 +70,47 @@ func (m *mongoStorage) GetTodos() ([]model.ToDo, error) {
 }
 
 func (m *mongoStorage) GetTodoById(id string) (model.ToDo, error) {
-	objectID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return model.ToDo{}, err
-	}
 	var todo model.ToDo
-	err = m.collection.FindOne(context.Background(), bson.D{{"_id", objectID}}).Decode(&todo)
+	err := m.collection.FindOne(context.Background(), bson.D{{Key: "_id", Value: id}}).Decode(&todo)
 	if err != nil {
-		return model.ToDo{}, err
+		log.Printf("Todo not found for ID: %v", id)
+		return model.ToDo{}, fmt.Errorf("todo with ID %v not found", id)
 	}
 	return todo, nil
 }
 
-func (m *mongoStorage) UpdateTodo(id string, todo model.ToDo) error {
-	objectID, err := primitive.ObjectIDFromHex(id)
+func (m *mongoStorage) GetTodoImageById(id string) (model.ToDo, error) {
+	var todo model.ToDo
+	err := m.collection.FindOne(context.Background(), bson.D{{Key: "_id", Value: id}}).Decode(&todo)
 	if err != nil {
-		return err
+		return model.ToDo{}, err
 	}
 
-	_, err = m.collection.UpdateOne(
+	return todo, nil
+}
+
+func (m *mongoStorage) UpdateTodo(id string, todo model.ToDo) error {
+	_, err := m.collection.UpdateOne(
 		context.Background(),
-		bson.D{{"_id", objectID}},
-		bson.D{{"$set", bson.D{{"title", todo.Title}, {"status", todo.Status}}}},
+		bson.D{{Key: "_id", Value: id}},
+		bson.D{{Key: "$set", Value: bson.D{{Key: "title", Value: todo.Title}, {Key: "status", Value: todo.Status}}}},
 	)
 	return err
 }
 
+func (m *mongoStorage) UpdateTodoImage(id string, imagePath string) error {
+	_, err := m.collection.UpdateOne(
+		context.Background(),
+		bson.D{{Key: "_id", Value: id}},
+		bson.D{{Key: "$set", Value: bson.D{{Key: "image_path", Value: imagePath}}}},
+	)
+	log.Println("File saved at:", imagePath)
+
+	return err
+}
+
 func (m *mongoStorage) DeleteTodo(id string) error {
-	objectID, err := primitive.ObjectIDFromHex(id)
-	if err != nil {
-		return err
-	}
-	_, err = m.collection.DeleteOne(context.Background(), bson.D{{"_id", objectID}})
+	_, err := m.collection.DeleteOne(context.Background(), bson.D{{Key: "_id", Value: id}})
 	return err
 }
 

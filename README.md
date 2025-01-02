@@ -44,7 +44,8 @@ cd todolist-api
     CREATE TABLE todos (
     id VARCHAR PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
-    status VARCHAR(50) NOT NULL CHECK (status IN ('created', 'in progress', 'done'))
+    status VARCHAR(50) NOT NULL CHECK (status IN ('created', 'in progress', 'done')),
+    image_path VARCHAR(255),
     );
 
 3. **Set up environment variables**:

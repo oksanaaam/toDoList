@@ -2,7 +2,12 @@ package handler
 
 import (
 	"fmt"
+	"io"
+	"log"
+	"mime/multipart"
 	"net/http"
+	"os"
+	"path/filepath"
 	"time"
 	"toDoList/internal/model"
 	"toDoList/internal/service"
@@ -82,7 +87,39 @@ func GetToDosById(todoService service.TodoService) gin.HandlerFunc {
 			c.JSON(http.StatusNotFound, gin.H{"message": "todo not found"})
 			return
 		}
+		// Add the path to the image
+		if todo.ImagePath != "" {
+			todo.ImagePath = "/images/" + filepath.Base(todo.ImagePath)
+		}
 		c.JSON(http.StatusOK, todo)
+	}
+}
+
+func GetTodosImageById(todoService service.TodoService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		todo, err := todoService.GetTodoImageById(id)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
+			return
+		}
+
+		// return error if no image
+		if todo.ImagePath == "" {
+			c.JSON(http.StatusNotFound, gin.H{"message": "No image attached to this todo"})
+			return
+		}
+
+		// checking if file is absent
+		imagePath := todo.ImagePath
+		if _, err := os.Stat(imagePath); os.IsNotExist(err) {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Image not found"})
+			return
+		}
+
+		// sent file to the user
+		c.File(imagePath)
 	}
 }
 
@@ -116,6 +153,69 @@ func UpdateToDos(todoService service.TodoService) gin.HandlerFunc {
 			return
 		}
 		c.JSON(http.StatusOK, gin.H{"message": "todo updated"})
+	}
+}
+
+func SaveImage(file *multipart.FileHeader) (string, error) {
+	// update path to div with files
+	dir := "./uploads/images"
+	err := os.MkdirAll(dir, os.ModePerm) // create div if not exist
+	if err != nil {
+		log.Println("Error creating directory:", err)
+		return "", err
+	}
+	log.Println("Directory created or exists:", dir)
+
+	// generate unique file name
+	filename := fmt.Sprintf("%s_%s", time.Now().Format("20060102150405"), file.Filename)
+	filepath := filepath.Join(dir, filename)
+
+	src, err := file.Open()
+	if err != nil {
+		return "", err
+	}
+	defer src.Close()
+
+	dst, err := os.Create(filepath)
+	if err != nil {
+		return "", err
+	}
+	defer dst.Close()
+
+	// copy data to new file
+	_, err = io.Copy(dst, src)
+	if err != nil {
+		return "", err
+	}
+
+	return filepath, nil
+}
+
+func UploadToDoImage(todoService service.TodoService) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		id := c.Param("id")
+
+		file, _ := c.FormFile("image")
+		if file == nil {
+			c.JSON(http.StatusBadRequest, gin.H{"message": "No image uploaded"})
+			return
+		}
+
+		// save file on server
+		imagePath, err := SaveImage(file)
+		if err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "Failed to save image", "error": err.Error()})
+			return
+		}
+
+		// update ToDo in db with new file path
+		err = todoService.UpdateTodoImage(id, imagePath)
+		if err != nil {
+			c.JSON(http.StatusNotFound, gin.H{"message": "Todo not found"})
+			return
+		}
+
+		c.JSON(http.StatusOK, gin.H{"message": "Image uploaded successfully", "image_path": imagePath})
 	}
 }
 
