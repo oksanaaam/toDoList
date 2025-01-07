@@ -32,12 +32,15 @@ func NewPostgresConnection(connString string) (*postgresStorage, error) {
 }
 
 func (s *postgresStorage) AddTodo(todo model.ToDo) error {
-	_, err := s.conn.Exec(context.Background(), "INSERT INTO todos (id, title, status) VALUES ($1, $2, $3)", todo.ID, todo.Title, todo.Status)
+	_, err := s.conn.Exec(context.Background(),
+		"INSERT INTO todos (id, title, status, image_path, reminder_time) VALUES ($1, $2, $3, $4, $5)",
+		todo.ID, todo.Title, todo.Status, todo.ImagePath, todo.ReminderTime)
 	return err
 }
 
 func (s *postgresStorage) GetTodos() ([]model.ToDo, error) {
-	rows, err := s.conn.Query(context.Background(), "SELECT id, title, status FROM todos")
+	rows, err := s.conn.Query(context.Background(),
+		"SELECT id, title, status, image_path, reminder_time FROM todos")
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +49,7 @@ func (s *postgresStorage) GetTodos() ([]model.ToDo, error) {
 	var todos []model.ToDo
 	for rows.Next() {
 		var todo model.ToDo
-		if err := rows.Scan(&todo.ID, &todo.Title, &todo.Status); err != nil {
+		if err := rows.Scan(&todo.ID, &todo.Title, &todo.Status, &todo.ImagePath, &todo.ReminderTime); err != nil {
 			return nil, err
 		}
 		todos = append(todos, todo)
@@ -56,7 +59,9 @@ func (s *postgresStorage) GetTodos() ([]model.ToDo, error) {
 
 func (s *postgresStorage) GetTodoById(id string) (model.ToDo, error) {
 	var todo model.ToDo
-	err := s.conn.QueryRow(context.Background(), "SELECT id, title, status FROM todos WHERE id = $1", id).Scan(&todo.ID, &todo.Title, &todo.Status)
+	err := s.conn.QueryRow(context.Background(),
+		"SELECT id, title, status, image_path, reminder_time FROM todos WHERE id = $1", id).
+		Scan(&todo.ID, &todo.Title, &todo.Status, &todo.ImagePath, &todo.ReminderTime)
 	if err != nil {
 		return model.ToDo{}, err
 	}

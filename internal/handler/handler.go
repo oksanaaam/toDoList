@@ -123,13 +123,30 @@ func GetTodosImageById(todoService service.TodoService) gin.HandlerFunc {
 	}
 }
 
-func PostToDos(todoService service.TodoService) gin.HandlerFunc {
+func PostToDos(todoService service.TodoService, reminderService *service.ReminderService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		var newTodo model.ToDo
 		if err := c.BindJSON(&newTodo); err != nil {
 			c.JSON(http.StatusBadRequest, gin.H{"message": "Incorrect data", "error": err.Error()})
 			return
 		}
+
+		if newTodo.ReminderTime != "" {
+			duration, err := time.ParseDuration(newTodo.ReminderTime)
+			if err != nil {
+				c.JSON(http.StatusBadRequest, gin.H{"message": "Invalid time format", "error": err.Error()})
+				return
+			}
+
+			reminderTime := time.Now().Add(duration)
+
+			reminderService.AddReminder(service.Reminder{
+				ID:           newTodo.ID,
+				ReminderTime: reminderTime,
+				TaskName:     newTodo.Title,
+			})
+		}
+
 		err := todoService.AddTodo(newTodo)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"message": "Could not add todo", "error": err.Error()})
