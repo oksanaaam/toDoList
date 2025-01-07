@@ -45,7 +45,8 @@ cd todolist-api
     id VARCHAR PRIMARY KEY,
     title VARCHAR(255) NOT NULL,
     status VARCHAR(50) NOT NULL CHECK (status IN ('created', 'in progress', 'done')),
-    image_path VARCHAR(255),
+    image_path VARCHAR(255) DEFAULT '',
+    reminder_time VARCHAR(255) DEFAULT ''
     );
 
 3. **Set up environment variables**:

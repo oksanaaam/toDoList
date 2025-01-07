@@ -37,7 +37,19 @@ func main() {
 	}
 	defer store.Close()
 
+	notificationChannel := make(chan string)
+
 	todoService := service.NewTodoService(store)
+	reminderService := service.NewReminderService(notificationChannel)
+
+	// Launching reminder worker
+	reminderService.StartWorker()
+
+	go func() {
+		for msg := range notificationChannel {
+			log.Println("Notification: " + msg)
+		}
+	}()
 
 	// List of servers to which we will send requests
 	servers := []string{
@@ -68,7 +80,9 @@ func main() {
 	router.GET("/", handler.HomePage(todoService))
 	router.GET("/todos", handler.GetToDos(todoService))
 	router.GET("/todos/:id", handler.GetToDosById(todoService))
-	router.POST("/todos", handler.PostToDos(todoService))
+	router.GET("/todos/:id/image", handler.GetTodosImageById(todoService))
+	router.POST("/todos", handler.PostToDos(todoService, reminderService))
+	router.POST("/todos/:id/image", handler.UploadToDoImage(todoService))
 	router.PUT("/todos/:id", handler.UpdateToDos(todoService))
 	router.DELETE("/todos/:id", handler.DeleteToDosById(todoService))
 
@@ -91,6 +105,8 @@ func main() {
 
 	<-sigs
 	log.Println("Shutdown signal received, starting graceful shutdown...")
+
+	reminderService.StopWorker()
 
 	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
 	defer cancel()
