@@ -61,6 +61,28 @@ func MaxConnections(limit int) gin.HandlerFunc {
 	}
 }
 
+func SSENotificationHandler(notificationChannel chan string) gin.HandlerFunc {
+	return func(c *gin.Context) {
+		// Set heasers for SSE
+		c.Header("Content-Type", "text/event-stream")
+		c.Header("Cache-Control", "no-cache")
+		c.Header("Connection", "keep-alive")
+		c.Writer.Flush()
+
+		// Sent notification to the client through SSE, if exist in the channel
+		for msg := range notificationChannel {
+			// Sent notification in format SSE
+			fmt.Fprintf(c.Writer, "data: %s\n\n", msg)
+			c.Writer.Flush()
+
+			// Close if client closed connection
+			if c.Writer.CloseNotify() != nil {
+				return
+			}
+		}
+	}
+}
+
 func HomePage(todoService service.TodoService) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		time.Sleep(5 * time.Second)

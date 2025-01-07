@@ -45,12 +45,6 @@ func main() {
 	// Launching reminder worker
 	reminderService.StartWorker()
 
-	go func() {
-		for msg := range notificationChannel {
-			log.Println("Notification: " + msg)
-		}
-	}()
-
 	// List of servers to which we will send requests
 	servers := []string{
 		"localhost:8080",
@@ -76,6 +70,9 @@ func main() {
 	router := gin.Default()
 	router.Use(handler.MaxConnections(150)) // limit the number of connections
 	router.Use(handler.RateLimiter())       // limit the number of requests
+
+	// Added new route for SSE
+	router.GET("/notifications", handler.SSENotificationHandler(notificationChannel))
 
 	router.GET("/", handler.HomePage(todoService))
 	router.GET("/todos", handler.GetToDos(todoService))
