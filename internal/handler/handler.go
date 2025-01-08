@@ -13,6 +13,7 @@ import (
 	"toDoList/internal/service"
 
 	"github.com/gin-gonic/gin"
+	"github.com/gorilla/websocket"
 	"golang.org/x/time/rate"
 )
 
@@ -61,22 +62,27 @@ func MaxConnections(limit int) gin.HandlerFunc {
 	}
 }
 
-func SSENotificationHandler(notificationChannel chan string) gin.HandlerFunc {
+var upgrader = websocket.Upgrader{
+	CheckOrigin: func(r *http.Request) bool { return true }, // Allow connect from any address
+}
+
+func WebSocketNotificationHandler(notificationChannel chan string) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// Set heasers for SSE
-		c.Header("Content-Type", "text/event-stream")
-		c.Header("Cache-Control", "no-cache")
-		c.Header("Connection", "keep-alive")
-		c.Writer.Flush()
+		// Changing HTTP-connection to WebSocket
+		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+		if err != nil {
+			log.Println("Failed to upgrade connection:", err)
+			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upgrade to WebSocket"})
+			return
+		}
+		defer conn.Close()
 
-		// Sent notification to the client through SSE, if exist in the channel
+		// Receive messages from channel and send them via WebSocket
 		for msg := range notificationChannel {
-			// Sent notification in format SSE
-			fmt.Fprintf(c.Writer, "data: %s\n\n", msg)
-			c.Writer.Flush()
-
-			// Close if client closed connection
-			if c.Writer.CloseNotify() != nil {
+			// Sent notification to the client
+			err := conn.WriteMessage(websocket.TextMessage, []byte(msg))
+			if err != nil {
+				log.Println("Failed to send message:", err)
 				return
 			}
 		}

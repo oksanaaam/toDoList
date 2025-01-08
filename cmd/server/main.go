@@ -71,8 +71,8 @@ func main() {
 	router.Use(handler.MaxConnections(150)) // limit the number of connections
 	router.Use(handler.RateLimiter())       // limit the number of requests
 
-	// Added new route for SSE
-	router.GET("/notifications", handler.SSENotificationHandler(notificationChannel))
+	// Added new route for websocket
+	router.GET("/notifications", handler.WebSocketNotificationHandler(notificationChannel))
 
 	router.GET("/", handler.HomePage(todoService))
 	router.GET("/todos", handler.GetToDos(todoService))
