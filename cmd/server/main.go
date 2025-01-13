@@ -25,9 +25,9 @@ func main() {
 	var err error
 
 	if cfg.DBType == "postgres" {
-		store, err = storage.NewPostgresConnection(cfg.DBConnectionString)
+		store, err = storage.NewPostgresDb(cfg.DBConnectionString)
 	} else if cfg.DBType == "mongo" {
-		store, err = storage.NewMongoConnection(cfg.MongoURI, cfg.MongoDBName, cfg.MongoCollectionName)
+		store, err = storage.NewMongoDb(cfg.MongoURI, cfg.MongoDBName, cfg.MongoCollectionName)
 	} else {
 		log.Fatalf("Unsupported DB type: %v", cfg.DBType)
 	}
