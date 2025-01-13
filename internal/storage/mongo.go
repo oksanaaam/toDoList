@@ -18,7 +18,7 @@ type mongoStorage struct {
 	collection *mongo.Collection
 }
 
-func NewMongoConnection(uri, dbName, collectionName string) (*mongoStorage, error) {
+func NewMongoDb(uri, dbName, collectionName string) (*mongoStorage, error) {
 	clientOptions := options.Client().ApplyURI(uri)
 	client, err := mongo.Connect(context.Background(), clientOptions)
 	if err != nil {
